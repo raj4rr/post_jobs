@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 
 dotenv.config();
+const JWT_SECRET = process.env.JWT_SECRET || "dev_jwt_secret_change_me";
 
 export function requireAuth(req, res, next) {
   const authHeader = req.headers.authorization || "";
@@ -12,7 +13,7 @@ export function requireAuth(req, res, next) {
   }
 
   try {
-    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = jwt.verify(token, JWT_SECRET);
     next();
   } catch {
     return res.status(401).json({ message: "Invalid or expired token" });

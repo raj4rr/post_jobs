@@ -2,10 +2,13 @@ const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 async function request(path, options = {}) {
   const token = localStorage.getItem("token");
+  const isFormData = options.body instanceof FormData;
   const headers = {
-    "Content-Type": "application/json",
     ...(options.headers || {})
   };
+  if (!isFormData) {
+    headers["Content-Type"] = "application/json";
+  }
 
   if (token) {
     headers.Authorization = `Bearer ${token}`;
@@ -16,7 +19,8 @@ async function request(path, options = {}) {
     headers
   });
 
-  const data = await response.json();
+  const text = await response.text();
+  const data = text ? JSON.parse(text) : {};
   if (!response.ok) {
     throw new Error(data.message || "Request failed");
   }
@@ -47,5 +51,12 @@ export const api = {
     analytics: () => request("/admin/analytics"),
     users: () => request("/admin/users"),
     moderateJob: (id, status) => request(`/admin/jobs/${id}/moderate`, { method: "PATCH", body: JSON.stringify({ status }) })
+  },
+  uploads: {
+    resume: (file) => {
+      const formData = new FormData();
+      formData.append("resume", file);
+      return request("/uploads/resume", { method: "POST", body: formData });
+    }
   }
 };

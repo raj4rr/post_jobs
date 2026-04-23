@@ -1,10 +1,13 @@
 USE referral_jobs;
 
 INSERT INTO users (name, email, password_hash, role) VALUES
-('Admin User', 'admin@refjobs.com', '$2a$10$6sYs0fVdKrDZa6d4vQh8CejRa9fdb6wdrWIfxqyvk20VEXkTd2LkG', 'admin'),
-('Poster One', 'poster@refjobs.com', '$2a$10$6sYs0fVdKrDZa6d4vQh8CejRa9fdb6wdrWIfxqyvk20VEXkTd2LkG', 'job_poster'),
-('Seeker One', 'seeker@refjobs.com', '$2a$10$6sYs0fVdKrDZa6d4vQh8CejRa9fdb6wdrWIfxqyvk20VEXkTd2LkG', 'job_seeker')
-ON DUPLICATE KEY UPDATE name = VALUES(name);
+('Admin User', 'admin@refjobs.com', '$2a$10$hzNE/gexoDiqNGdCGJfLC.ngicj6.8FJOo034WubsFgwJilNTw6tO', 'admin'),
+('Poster One', 'poster@refjobs.com', '$2a$10$hzNE/gexoDiqNGdCGJfLC.ngicj6.8FJOo034WubsFgwJilNTw6tO', 'job_poster'),
+('Seeker One', 'seeker@refjobs.com', '$2a$10$hzNE/gexoDiqNGdCGJfLC.ngicj6.8FJOo034WubsFgwJilNTw6tO', 'job_seeker')
+ON DUPLICATE KEY UPDATE
+  name = VALUES(name),
+  password_hash = VALUES(password_hash),
+  role = VALUES(role);
 
 INSERT INTO profiles (user_id, phone, location, experience_years, skills, resume_url, education, work_experience, portfolio_url)
 VALUES

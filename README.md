@@ -11,6 +11,7 @@ A full-stack starter for a referral-focused job board with sponsorship visibilit
 - Seeker dashboard (applied jobs, saved jobs, profile completion)
 - Poster dashboard (posted jobs, applicants, resume links)
 - Admin panel (analytics, pending job moderation, users)
+- Resume upload to local disk (`/uploads/resumes`)
 - MySQL schema and seed data
 
 ## Tech Stack
@@ -56,6 +57,8 @@ npm install
 npm run dev
 ```
 
+- `PUBLIC_BASE_URL` (used in uploaded resume URLs)
+
 ## 3) Frontend
 
 ```bash
@@ -84,9 +87,9 @@ Frontend runs on `http://localhost:5173`, backend on `http://localhost:5000`.
 - `GET /api/admin/analytics` (admin)
 - `GET /api/admin/users` (admin)
 - `PATCH /api/admin/jobs/:id/moderate` (admin)
+- `POST /api/uploads/resume` (authenticated, multipart file upload)
 
 ## Notes
 
-- Resume upload is represented as a URL in this MVP; you can add file storage next (S3/Cloudinary/local).
-- Google login, notifications, referral chat, and real relevance ranking are not implemented yet.
+- Uploaded files are stored locally under `server/uploads/resumes`.
 - Match % is based on overlap of profile skills vs required job skills.

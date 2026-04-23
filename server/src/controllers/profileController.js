@@ -1,6 +1,23 @@
 import { query } from "../config/db.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
+function parseSkills(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+      if (typeof parsed === "string") {
+        return parsed.split(",").map((s) => s.trim()).filter(Boolean);
+      }
+    } catch {
+      return raw.split(",").map((s) => s.trim()).filter(Boolean);
+    }
+  }
+  return [];
+}
+
 export const getMyProfile = asyncHandler(async (req, res) => {
   const profiles = await query(
     `SELECT p.*, u.name, u.email
@@ -29,7 +46,7 @@ export const getMyProfile = asyncHandler(async (req, res) => {
   const profile = profiles[0];
   return res.json({
     ...profile,
-    skills: profile.skills ? JSON.parse(profile.skills) : []
+    skills: parseSkills(profile.skills)
   });
 });
 

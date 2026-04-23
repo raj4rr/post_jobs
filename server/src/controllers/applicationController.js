@@ -1,6 +1,23 @@
 import { query } from "../config/db.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
+function parseSkills(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+      if (typeof parsed === "string") {
+        return parsed.split(",").map((s) => s.trim()).filter(Boolean);
+      }
+    } catch {
+      return raw.split(",").map((s) => s.trim()).filter(Boolean);
+    }
+  }
+  return [];
+}
+
 export const applyToJob = asyncHandler(async (req, res) => {
   const { resume_url = null, note = "" } = req.body;
   const jobId = Number(req.params.id);
@@ -23,8 +40,8 @@ export const applyToJob = asyncHandler(async (req, res) => {
   }
 
   const profileRows = await query("SELECT skills, resume_url FROM profiles WHERE user_id = ?", [req.user.id]);
-  const profileSkills = profileRows[0]?.skills ? JSON.parse(profileRows[0].skills) : [];
-  const jobSkills = jobs[0].skills_required ? JSON.parse(jobs[0].skills_required) : [];
+  const profileSkills = parseSkills(profileRows[0]?.skills);
+  const jobSkills = parseSkills(jobs[0].skills_required);
 
   const overlap = jobSkills.filter((skill) =>
     profileSkills.map((s) => s.toLowerCase()).includes(String(skill).toLowerCase())

@@ -7,6 +7,8 @@ export default function JobDetailsPage() {
   const { id } = useParams();
   const { user } = useAuth();
   const [job, setJob] = useState(null);
+  const [isApplied, setIsApplied] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -14,15 +16,22 @@ export default function JobDetailsPage() {
       try {
         const data = await api.jobs.byId(id);
         setJob(data);
+
+        if (user?.role === "job_seeker") {
+          const dashboard = await api.profile.seekerDashboard();
+          setIsApplied(dashboard.applied.some((item) => String(item.job_id) === String(id)));
+          setIsSaved(dashboard.saved.some((item) => String(item.job_id) === String(id)));
+        }
       } catch (err) {
         setError(err.message);
       }
     })();
-  }, [id]);
+  }, [id, user?.role]);
 
   async function apply() {
     try {
       const result = await api.jobs.apply(id, {});
+      setIsApplied(true);
       alert(`Application submitted. Match: ${result.matchPercent}%`);
     } catch (err) {
       alert(err.message);
@@ -32,6 +41,7 @@ export default function JobDetailsPage() {
   async function save() {
     try {
       await api.jobs.save(id);
+      setIsSaved(true);
       alert("Job saved");
     } catch (err) {
       alert(err.message);
@@ -57,7 +67,7 @@ export default function JobDetailsPage() {
           <span key={skill} className="tag">{skill}</span>
         ))}
       </div>
-      {user?.role === "job_seeker" && (
+      {user?.role === "job_seeker" && !(isApplied || isSaved) && (
         <div className="actions">
           <button className="btn" onClick={apply}>Apply</button>
           <button className="btn ghost" onClick={save}>Save Job</button>

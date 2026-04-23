@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 
-export default function JobCard({ job, onApply, onSave, canAct }) {
+export default function JobCard({ job, onApply, onSave, canAct, isActionHidden }) {
+  const hideActions = Boolean(isActionHidden);
+
   return (
     <article className="card">
       <div className="space-between">
@@ -16,8 +18,8 @@ export default function JobCard({ job, onApply, onSave, canAct }) {
       </div>
       <div className="actions">
         <Link className="btn" to={`/jobs/${job.id}`}>View Details</Link>
-        {canAct && <button className="btn" onClick={() => onApply(job.id)}>Apply Now</button>}
-        {canAct && <button className="btn ghost" onClick={() => onSave(job.id)}>Save</button>}
+        {canAct && !hideActions && <button className="btn" onClick={() => onApply(job.id)}>Apply Now</button>}
+        {canAct && !hideActions && <button className="btn ghost" onClick={() => onSave(job.id)}>Save</button>}
       </div>
     </article>
   );

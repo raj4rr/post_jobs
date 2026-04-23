@@ -1,6 +1,23 @@
 import { query } from "../config/db.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
+function parseSkills(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === "string") {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+      if (typeof parsed === "string") {
+        return parsed.split(",").map((s) => s.trim()).filter(Boolean);
+      }
+    } catch {
+      return raw.split(",").map((s) => s.trim()).filter(Boolean);
+    }
+  }
+  return [];
+}
+
 function buildWhereClause(filters, user) {
   const where = [];
   const params = [];
@@ -132,7 +149,7 @@ export const listJobs = asyncHandler(async (req, res) => {
 
   const normalized = jobs.map((job) => ({
     ...job,
-    skills_required: job.skills_required ? JSON.parse(job.skills_required) : []
+    skills_required: parseSkills(job.skills_required)
   }));
 
   res.json(normalized);
@@ -158,7 +175,7 @@ export const getJobById = asyncHandler(async (req, res) => {
 
   res.json({
     ...job,
-    skills_required: job.skills_required ? JSON.parse(job.skills_required) : []
+    skills_required: parseSkills(job.skills_required)
   });
 });
 

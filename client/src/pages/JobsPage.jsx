@@ -8,6 +8,7 @@ export default function JobsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [jobs, setJobs] = useState([]);
+  const [hiddenActionsByJob, setHiddenActionsByJob] = useState({});
   const [error, setError] = useState("");
   const [filters, setFilters] = useState({
     search: "",
@@ -42,9 +43,33 @@ export default function JobsPage() {
     loadJobs();
   }, [queryString]);
 
+  useEffect(() => {
+    (async () => {
+      if (user?.role !== "job_seeker") {
+        setHiddenActionsByJob({});
+        return;
+      }
+
+      try {
+        const dashboard = await api.profile.seekerDashboard();
+        const hidden = {};
+        dashboard.applied.forEach((item) => {
+          hidden[String(item.job_id)] = true;
+        });
+        dashboard.saved.forEach((item) => {
+          hidden[String(item.job_id)] = true;
+        });
+        setHiddenActionsByJob(hidden);
+      } catch {
+        // noop: main job listing should still work
+      }
+    })();
+  }, [user?.role]);
+
   async function onApply(jobId) {
     try {
       await api.jobs.apply(jobId, {});
+      setHiddenActionsByJob((prev) => ({ ...prev, [String(jobId)]: true }));
       alert("Applied successfully");
     } catch (err) {
       if (err.message.includes("Unauthorized")) {
@@ -58,6 +83,7 @@ export default function JobsPage() {
   async function onSave(jobId) {
     try {
       await api.jobs.save(jobId);
+      setHiddenActionsByJob((prev) => ({ ...prev, [String(jobId)]: true }));
       alert("Job saved");
     } catch (err) {
       if (err.message.includes("Unauthorized")) {
@@ -104,6 +130,7 @@ export default function JobsPage() {
             onApply={onApply}
             onSave={onSave}
             canAct={user?.role === "job_seeker"}
+            isActionHidden={Boolean(hiddenActionsByJob[String(job.id)])}
           />
         ))}
       </section>

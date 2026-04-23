@@ -4,6 +4,7 @@ import { api } from "../api.js";
 export default function ProfilePage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [uploading, setUploading] = useState(false);
   const [form, setForm] = useState({
     phone: "",
     location: "",
@@ -50,6 +51,24 @@ export default function ProfilePage() {
     }
   }
 
+  async function uploadResume(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setError("");
+    setMessage("");
+    setUploading(true);
+    try {
+      const data = await api.uploads.resume(file);
+      setForm((prev) => ({ ...prev, resume_url: data.resumeUrl }));
+      setMessage("Resume uploaded. Save profile to persist it.");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setUploading(false);
+      event.target.value = "";
+    }
+  }
+
   return (
     <main className="container">
       <h2>Your Profile</h2>
@@ -60,7 +79,11 @@ export default function ProfilePage() {
         <input placeholder="Location" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
         <input type="number" placeholder="Experience (years)" value={form.experience_years} onChange={(e) => setForm({ ...form, experience_years: Number(e.target.value) })} />
         <input placeholder="Skills (comma separated)" value={form.skills} onChange={(e) => setForm({ ...form, skills: e.target.value })} />
-        <input placeholder="Resume URL (or uploaded file link)" value={form.resume_url} onChange={(e) => setForm({ ...form, resume_url: e.target.value })} />
+        <input placeholder="Resume URL (auto-set after upload)" value={form.resume_url} onChange={(e) => setForm({ ...form, resume_url: e.target.value })} />
+        <label className="inline">
+          <span>{uploading ? "Uploading..." : "Upload Resume (PDF/DOC/DOCX)"}</span>
+          <input type="file" accept=".pdf,.doc,.docx" onChange={uploadResume} disabled={uploading} />
+        </label>
         <textarea placeholder="Education" value={form.education} onChange={(e) => setForm({ ...form, education: e.target.value })} />
         <textarea placeholder="Work Experience" value={form.work_experience} onChange={(e) => setForm({ ...form, work_experience: e.target.value })} />
         <input placeholder="Portfolio / GitHub" value={form.portfolio_url} onChange={(e) => setForm({ ...form, portfolio_url: e.target.value })} />
